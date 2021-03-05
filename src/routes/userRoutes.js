@@ -2,8 +2,13 @@ const router = require("express").Router();
 
 module.exports = db => {
   router.get("/", (req, res) => {
-    const obj = {name: "users"}
-    res.json(obj)
+    db.getAllUsers()
+      .then(data => {
+        res.json(data)
+      })
+      .catch(err => {
+        console.log("error: ", err)
+      })
   })
 
   return router

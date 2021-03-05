@@ -4,7 +4,7 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const methodOverride = require("method-override");
 const app = express();
-const db = require("../db/setup")
+const db = require("../db/helper")
 
 app.use(cookieSession({
   name: 'session',

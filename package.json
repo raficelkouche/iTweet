@@ -1,0 +1,29 @@
+{
+  "name": "itweet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "local": "./node_modules/.bin/nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:reset": "node db/reset.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "cookie-session": "^1.4.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "method-override": "^3.0.0",
+    "pg": "^8.5.1",
+    "pg-native": "^3.0.0"
+  },
+  "devDependencies": {
+    "chalk": "^3.0.0",
+    "fs": "^0.0.1-security",
+    "nodemon": "^2.0.7"
+  }
+}

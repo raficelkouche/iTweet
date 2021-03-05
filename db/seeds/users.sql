@@ -1,1 +1,1 @@
-INSERT INTO users (name, email, password) VALUES ('rafic', 'rafic@email.com', '123456');
+INSERT INTO users (username, password) VALUES ('rafic', '$2b$10$TxdnHU2hjro8Xo9wLjDvruEDjkhLcUsjpJ7MB8W9zmwkx8t0M03ki');

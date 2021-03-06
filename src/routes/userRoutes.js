@@ -17,7 +17,7 @@ module.exports = db => {
         }
         const { username } = data
         res.json({ username })
-      })    
+      })
   })
 
   return router;

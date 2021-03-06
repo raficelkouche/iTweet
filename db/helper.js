@@ -5,9 +5,9 @@ const pool = new Pool();
 
 const getAllUsers = () => {
   return pool
-          .query('SELECT * FROM users')
-          .then(res => res.rows[0])
-          .catch(err => console.log(err))
+    .query('SELECT * FROM users')
+    .then(res => res.rows[0])
+    .catch(err => console.log(err))
 }
 exports.getAllUsers = getAllUsers;
 
@@ -20,13 +20,18 @@ const addNewUser = (userInfo) => {
     RETURNING *;
   `, [username, password])
     .then(res => res.rows[0])
-    .catch(error => console.log(error.stack))
+    .catch(error => console.log(error.detail))
 };
 exports.addNewUser = addNewUser;
 
 const retrieveUserRecord = username => {
   return pool.query(`SELECT * FROM users WHERE username = $1`, [username])
       .then(res => res.rows[0])
-      .catch(error => console.log(error.stack))
+      .catch(error => console.log(error.detail))
 }
 exports.retrieveUserRecord = retrieveUserRecord;
+
+const closeConnection = async () => {
+  await pool.end()
+}
+exports.closeConnection = closeConnection;

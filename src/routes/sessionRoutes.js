@@ -6,6 +6,7 @@ module.exports = db => {
   //create a new session on successful login
   router.post("/", (req, res) => {
     const { username, password } = req.body
+    
     db.retrieveUserRecord(username)
       .then(data => {
         if (!data) {

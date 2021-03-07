@@ -15,7 +15,7 @@ module.exports = db => {
             return res.status(500).json({ error: "incorrect password" });
         } else {
           const { id, username } = data;
-          req.session.userID = id      //set the session cookies
+          req.session.userID = id.toString()      //set the session cookies
           res.json({ id, username })  //can be used by the client to display username, etc...
         }
       })

@@ -107,8 +107,8 @@ const getTweetsByUser = user_id => {
 }
 exports.getTweetsByUser = getTweetsByUser;
 
-const getTweetByID = tweet_id => {
-  return pool.query(`SELECT * FROM tweets WHERE id = $1`, [tweet_id])
+const getTweetByID = (user_id, tweet_id) => {
+  return pool.query(`SELECT * FROM tweets WHERE id=$1 AND user_id=$2 `, [tweet_id, user_id])
     .then(res => res.rows[0])
     .catch(error => console.log("query error: ", error.detail))
 }
@@ -123,24 +123,24 @@ const addTweet = (tweet, user_id) => {
 }
 exports.addTweet = addTweet;
 
-const editTweet = (tweet_id, newTweet) => {
+const editTweet = (user_id, tweet_id, newTweet) => {
   return pool.query(`
     UPDATE tweets 
     SET text=$1
-    WHERE id=$2
+    WHERE id=$2 AND user_id=$3
     RETURNING *;
-    ` [newTweet, tweet_id])
+    `, [newTweet, tweet_id, user_id])
     .then(res => res.rows[0])
     .catch(error => console.log("query error: ", error.detail))
 }
 exports.editTweet = editTweet;
 
-const deleteTweet = tweet_id => {
+const deleteTweet = (user_id, tweet_id) => {
   return pool.query(`
     DELETE FROM tweets
-    WHERE id=$1
+    WHERE id=$1 AND user_id=$2
     RETURNING *;
-  `, [tweet_id])
+  `, [tweet_id, user_id])
     .then(res => res.rows[0])
     .catch(error => console.log("query error: ", error.detail))
 }

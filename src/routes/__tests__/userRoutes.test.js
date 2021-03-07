@@ -55,6 +55,40 @@ describe("User Registration, /users endpoint", () => {
     expect(response.body).not.toHaveLength(0)
   })
 
+  test("an authenticated user can post a new tweet", async () => {
+    let tweet_id;
+    await agent
+      .post(`/api/users/${user_id}/tweets`)
+      .send({tweet: "it feels cold today!"})
+      .set('Content-Type', 'application/x-www-form-urlencoded')
+      .then(response => {
+        expect(response.statusCode).toBe(200)
+        tweet_id = response.body.id //use it to check if the new tweet has been persisted to the DB
+      })
+    await getTweetByID(user_id, tweet_id)
+      .then(data => {
+        expect(data).toBeDefined();
+      })
+  })
+
+  test("if a user tries to post a tweet on behalf of another user an error should be returned", async () => {
+    let tweet_id;
+    //note that the agent is logged in as user_id 1.
+    await agent
+      .post(`/api/users/3/tweets`) //user_id 1 will attempt to post on behalf of user_id 3 
+      .send({ tweet: "I am starving..." })
+      .set('Content-Type', 'application/x-www-form-urlencoded')
+      .then(response => {
+        expect(response.statusCode).toBe(500)
+        tweet_id = response.body.id //use it to check if the new tweet has been persisted to the DB
+      })
+    //confirm that the tweet has not been posted
+    await getTweetByID(user_id, tweet_id)
+      .then(data => {
+        expect(data).not.toBeDefined();
+      })
+  })
+
   test("authenticated users can retrieve all their tweets", async () => {
     await agent
       .get(`/api/users/${user_id}/tweets`)
@@ -105,7 +139,7 @@ describe("User Registration, /users endpoint", () => {
     await agent
       .put(`/api/users/${user_id}/tweets/${tweet_id}`)
       .send({tweet: newTweet})
-      .set('Accept', 'application/x-www-form-urlencoded')
+      .set('Content-Type', 'application/x-www-form-urlencoded')
       .then(response => {
         expect(response.statusCode).toBe(200);
         expect.objectContaining({

@@ -20,5 +20,19 @@ module.exports = db => {
       })
   })
 
+  router.get("/:user_id/messages", (req, res) => {
+    //the user id is available after the login process is complete
+    const user_id = Number(req.params.user_id)
+    
+    if(user_id === req.session.userID) {
+      db.getUserMessages(user_id)
+        .then(data => {
+          res.status(200).json(data)
+        })
+    } else {
+      res.status(500).json({error: "access denied!"})
+    }
+  })
+
   return router;
 };

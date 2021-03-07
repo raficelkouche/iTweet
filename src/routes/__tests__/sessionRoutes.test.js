@@ -11,10 +11,10 @@ describe("User Authentication, /session endpoint", () => {
   test("If login is successful, it should set session cookies", async () => {
   const res = await request(app)
       .post('/api/sessions')
-      .send({ username: "rafic", password: "123456" })  //user already exists in database
+      .send({ username: "Rafic", password: "123456" })  //user already exists in database
       .set('Accept', 'application/json')
       expect(res.headers).toHaveProperty('set-cookie')
-      expect(res.body).toHaveProperty('username', 'rafic')
+      expect(res.body).toHaveProperty('username', 'Rafic')
       expect(res.statusCode).toBe(200)
   })
 
@@ -31,7 +31,7 @@ describe("User Authentication, /session endpoint", () => {
   test("If a password is wrong, cookies should not be set and an error should be returned", async () => {
     const res = await request(app)
       .post('/api/sessions')
-      .send({ username: "rafic", password: "1234" })  //user is not in the database
+      .send({ username: "Rafic", password: "1234" })
       .set('Accept', 'application/json')
     expect(res.headers).not.toHaveProperty('set-cookie')
     expect(res.body).toHaveProperty('error', 'incorrect password')

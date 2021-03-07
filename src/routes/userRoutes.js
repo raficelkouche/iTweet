@@ -34,6 +34,20 @@ module.exports = db => {
     }
   })
 
+  router.post("/:user_id/tweets", (req, res) => {
+    let user_id = req.params.user_id
+    let tweet = req.body.tweet
+
+    if(user_id === req.session.userID) {
+      db.addTweet(tweet, user_id)
+        .then(data => {
+          res.status(200).json(data)
+        })
+    } else {
+      res.status(500).json({error: "unauthorized"})
+    }
+  })
+
   router.get("/:user_id/tweets", (req, res) => {
     const user_id = req.params.user_id
 

@@ -22,7 +22,7 @@ module.exports = db => {
 
   router.get("/:user_id/messages", (req, res) => {
     //the user id is available after the login process is complete
-    const user_id = Number(req.params.user_id)
+    const user_id = req.params.user_id
     
     if(user_id === req.session.userID) {
       db.getUserMessages(user_id)
@@ -30,7 +30,64 @@ module.exports = db => {
           res.status(200).json(data)
         })
     } else {
-      res.status(500).json({error: "access denied!"})
+      res.status(500).json({error: "access denied!"});
+    }
+  })
+
+  router.get("/:user_id/tweets", (req, res) => {
+    const user_id = req.params.user_id
+
+    if(user_id === req.session.userID) {
+      db.getTweetsByUser(user_id)
+        .then(data => {
+          res.status(200).json(data)
+        })
+    } else {
+      res.status(500).json({ error: "access denied!" });
+    }
+
+  })
+
+  router.get("/:user_id/tweets/:tweet_id", (req, res) => {
+    let {user_id, tweet_id} = req.params
+    
+    if(user_id === req.session.userID){
+      db.getTweetByID(user_id, tweet_id)
+        .then(data => {
+          //absence of data implies that this tweet doesn't belong to user_id
+          data ? res.status(200).json(data) : res.status(500).json({error: "not found"})
+        })
+    } else {
+      res.status(500).json({error: "access denied!"});
+    }
+  })
+
+  router.put("/:user_id/tweets/:tweet_id", (req, res) => {
+    let { user_id, tweet_id } = req.params
+    let tweet = req.body.tweet
+
+    if(user_id === req.session.userID) {
+      db.editTweet(user_id, tweet_id, tweet)
+        .then(data => {
+          //absence of data implies that this tweet doesn't belong to user_id
+          data ? res.status(200).json(data) : res.status(500).json({ error: "request could not be completed" })
+        })
+    } else {
+      res.status(500).json({error: "access denied!"});
+    }
+  })
+
+  router.delete("/:user_id/tweets/:tweet_id", (req, res) => {
+    let { user_id, tweet_id } = req.params
+
+    if(user_id === req.session.userID) {
+      db.deleteTweet(user_id, tweet_id)
+        .then(data => {
+          //absence of data implies that this tweet doesn't belong to user_id
+          data ? res.status(200).json(data) : res.status(500).json({ error: "request could not be completed" })
+        })
+    } else {
+      res.status(500).json({error: "access denied"});
     }
   })
 

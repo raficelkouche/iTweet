@@ -84,12 +84,6 @@ const updateMessageStatus = string_id => {
 }
 exports.updateMessageStatus = updateMessageStatus;
 
-
-const closeConnection = async () => {
-  await pool.end()
-}
-exports.closeConnection = closeConnection;
-
 /*
 helpers for tweets
 */
@@ -145,3 +139,32 @@ const deleteTweet = (user_id, tweet_id) => {
     .catch(error => console.log("query error: ", error.detail))
 }
 exports.deleteTweet = deleteTweet;
+
+const likeTweet = tweet_id => {
+  return pool.query(`
+    UPDATE tweets
+    SET likes = likes + 1
+    WHERE id=$1
+    RETURNING *;
+    `,[tweet_id])
+    .then(res => res.rows[0])
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.likeTweet = likeTweet;
+
+const unlikeTweet = tweet_id => {
+  return pool.query(`
+    UPDATE tweets
+    SET likes = likes - 1
+    WHERE id=$1 AND likes > 0
+    RETURNING *;
+    `, [tweet_id])
+    .then(res => res.rows[0])
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.unlikeTweet = unlikeTweet;
+
+const closeConnection = async () => {
+  await pool.end()
+}
+exports.closeConnection = closeConnection;

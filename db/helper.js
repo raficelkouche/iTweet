@@ -3,6 +3,9 @@ const format = require("pg-format");
 
 const pool = new Pool();
 
+/*
+helpers for users
+*/
 const getAllUsers = () => {
   return pool
     .query('SELECT * FROM users')
@@ -31,6 +34,9 @@ const retrieveUserRecord = username => {
 }
 exports.retrieveUserRecord = retrieveUserRecord;
 
+/*
+helpers for chatting
+*/
 const getUserMessages = user_id => {
   return pool.query(`
     SELECT string_id, content, sender_id, receiver_id, is_read, created_on 
@@ -57,6 +63,7 @@ exports.getSpecificMessage = getSpecificMessage
 
 const updateMessages = conversation => {
   const values = [];
+  
   for (const key in conversation) {
     values.push(Object.values(conversation[key]))
   }
@@ -77,7 +84,64 @@ const updateMessageStatus = string_id => {
 }
 exports.updateMessageStatus = updateMessageStatus;
 
+
 const closeConnection = async () => {
   await pool.end()
 }
 exports.closeConnection = closeConnection;
+
+/*
+helpers for tweets
+*/
+const getAllTweets = () => {
+  return pool.query(`SELECT * FROM tweets;`)
+    .then(res => res.rows)
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.getAllTweets = getAllTweets;
+
+const getTweetsByUser = user_id => {
+  return pool.query(`SELECT * FROM tweets WHERE user_id=$1`, [user_id])
+    .then(res => res.rows)
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.getTweetsByUser = getTweetsByUser;
+
+const getTweetByID = tweet_id => {
+  return pool.query(`SELECT * FROM tweets WHERE id = $1`, [tweet_id])
+    .then(res => res.rows[0])
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.getTweetByID = getTweetByID;
+
+const addTweet = (tweet, user_id) => {
+  return pool.query(`
+    INSERT into tweets (text, user_id) VALUES ($1, $2) RETURNING *; 
+  `, [tweet, user_id])
+    .then(res => res.rows[0])
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.addTweet = addTweet;
+
+const editTweet = (tweet_id, newTweet) => {
+  return pool.query(`
+    UPDATE tweets 
+    SET text=$1
+    WHERE id=$2
+    RETURNING *;
+    ` [newTweet, tweet_id])
+    .then(res => res.rows[0])
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.editTweet = editTweet;
+
+const deleteTweet = tweet_id => {
+  return pool.query(`
+    DELETE FROM tweets
+    WHERE id=$1
+    RETURNING *;
+  `, [tweet_id])
+    .then(res => res.rows[0])
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.deleteTweet = deleteTweet;

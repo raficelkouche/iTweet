@@ -9,3 +9,5 @@ CREATE TABLE messages (
   is_read BOOLEAN NOT NULL DEFAULT FALSE,
   created_on TIMESTAMP DEFAULT NOW()
 );
+
+CREATE INDEX messages_uuid ON messages(string_id);

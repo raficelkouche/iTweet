@@ -88,14 +88,20 @@ exports.updateMessageStatus = updateMessageStatus;
 helpers for tweets
 */
 const getAllTweets = () => {
-  return pool.query(`SELECT * FROM tweets;`)
+  return pool.query(`SELECT * FROM tweets ORDER BY created_on DESC;`)
     .then(res => res.rows)
     .catch(error => console.log("query error: ", error.detail))
 }
 exports.getAllTweets = getAllTweets;
 
+//this will get the tweets tweeted by a specific user (retweets are put in a separate function below)
 const getTweetsByUser = user_id => {
-  return pool.query(`SELECT * FROM tweets WHERE user_id=$1`, [user_id])
+  return pool.query(`
+  SELECT * 
+  FROM tweets 
+  WHERE user_id=$1
+  ORDER BY created_on DESC;
+  `, [user_id])
     .then(res => res.rows)
     .catch(error => console.log("query error: ", error.detail))
 }
@@ -163,6 +169,89 @@ const unlikeTweet = tweet_id => {
     .catch(error => console.log("query error: ", error.detail))
 }
 exports.unlikeTweet = unlikeTweet;
+
+//this will get all the retweeted tweets by a given user
+const getRetweetedTweets = user_id => {
+  return pool.query(`
+    SELECT tweets.* 
+    FROM tweets
+    JOIN retweets ON retweets.tweet_id = tweets.id
+    WHERE retweeted_by = $1
+    ORDER BY created_on DESC;
+    `, [user_id])
+    .then(res => res.rows)
+    .catch(error => console.log("query error: ", error.detail))
+}
+exports.getRetweetedTweets = getRetweetedTweets;
+
+const getRetweetCount = tweet_id => {
+  return pool.query(`
+    SELECT tweet_id, COUNT(*) as retweet_count
+    FROM retweets
+    WHERE tweet_id=$1 
+    GROUP BY tweet_id;
+  `, [tweet_id])
+  .then(res => res.rows[0])
+  .catch(error => console.log("query error: ", error.detail))
+}
+exports.getRetweetCount = getRetweetCount;
+
+const addToRetweets = (tweet_id, user_id) => {
+  return pool.query(`
+    INSERT INTO retweets (tweet_id, retweeted_by)
+    VALUES ($1, $2)
+    RETURNING *;
+  `, [tweet_id, user_id])
+  .then(res => res.rows[0])
+  .catch(error => console.log("query error: ", error.detail))
+}
+exports.addToRetweets = addToRetweets;
+
+const increaseRetweetCount = tweet_id => {
+  return pool.query(`
+    UPDATE tweets
+    SET retweets=retweets + 1
+    WHERE id=$1
+    RETURNING *;
+  `, [tweet_id])
+}
+exports.increaseRetweetCount = increaseRetweetCount;
+
+const getTweetThread = tweet_id => {
+  return pool.query(`
+    SELECT *
+    FROM threads
+    WHERE parent_tweet=$1
+    ORDER BY created_on ASC;
+  `, [tweet_id])
+  .then(res => res.rows)
+  .catch(error => console.log("query error: ", error.detail))
+}
+exports.getTweetThread = getTweetThread;
+
+const getUserReplies = user_id => {
+  return pool.query(`
+    SELECT *
+    FROM threads
+    WHERE reply_author=$1
+    ORDER BY created_on DESC;
+  `, [user_id])
+  .then(res => res.rows)
+  .catch(error => console.log("query error: ", error.detail))
+}
+exports.getUserReplies = getUserReplies;
+
+const addReply = (user_id, parent_tweet, reply) => {
+  return pool.query(`
+    INSERT INTO threads (parent_tweet, reply_author, reply)
+    VALUES ($1,$2,$3)
+    RETURNING *;
+  `, [parent_tweet, user_id, reply])
+  .then(res => res.rows[0])
+  .catch(error => console.log("query error: ", error.detail))
+}
+exports.addReply = addReply;
+
 
 const closeConnection = async () => {
   await pool.end()

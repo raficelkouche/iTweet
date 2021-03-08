@@ -35,6 +35,7 @@ module.exports = db => {
   })
 
   router.post("/:user_id/tweets", (req, res) => {
+    //input validation to be taken care of on the client side
     let user_id = req.params.user_id
     let tweet = req.body.tweet
 
@@ -48,6 +49,7 @@ module.exports = db => {
     }
   })
 
+  //this will only retrieve the tweets by a given user excluding retweets
   router.get("/:user_id/tweets", (req, res) => {
     const user_id = req.params.user_id
 
@@ -59,7 +61,21 @@ module.exports = db => {
     } else {
       res.status(500).json({ error: "access denied!" });
     }
+  })
 
+  //this will retrieve all the tweets retweeted by a given user{
+  router.get("/:user_id/retweets", (req, res) => {
+    let user_id = req.params.user_id
+
+    if(user_id === req.session.userID) {
+      db.getRetweetedTweets(user_id)
+        .then(data => {
+          (data.length > 0) ? res.status(200).json(data)
+                : res.status(200).json({message: "no retweets"})
+        })
+    } else {
+      res.status(500).json({error: "unauthorized"})
+    }
   })
 
   router.get("/:user_id/tweets/:tweet_id", (req, res) => {
@@ -77,6 +93,7 @@ module.exports = db => {
   })
 
   router.put("/:user_id/tweets/:tweet_id", (req, res) => {
+    //input validation to be taken care of on the client side
     let { user_id, tweet_id } = req.params
     let tweet = req.body.tweet
 
@@ -102,6 +119,62 @@ module.exports = db => {
         })
     } else {
       res.status(500).json({error: "access denied"});
+    }
+  })
+
+  router.put("/:user_id/tweets/:tweet_id/like", (req, res) => {
+    let { user_id, tweet_id } = req.params
+
+    if (user_id === req.session.userID) {
+      //if there is a requirement to know who liked what, user_id can also be passed as an additional argument
+      db.likeTweet(tweet_id)
+        .then(data => {
+          data ? res.status(200).json(data) : res.status(500).json({ error: "tweet not found" })
+        })
+    } else {
+      res.status(500).json({ error: "unauthorized" })
+    }
+  })
+
+  router.put("/:user_id/tweets/:tweet_id/unlike", (req, res) => {
+    let { user_id, tweet_id } = req.params
+
+    if (user_id === req.session.userID) {
+      db.unlikeTweet(tweet_id)
+        .then(data => {
+          data ? res.status(200).json(data)
+            : res.status(500).json({ error: "tweet not found / likes can't be negative" })
+        })
+    } else {
+      res.status(500).json({ error: "unauthorized" })
+    }
+  })
+
+  router.get("/:user_id/replies", (req, res) => {
+    const user_id = req.params.user_id
+
+    if(user_id === req.session.userID){
+      db.getUserReplies(user_id)
+        .then(data => {
+          (data.length > 0) ? res.status(200).json(data)
+            : res.status(200).json({message: "no replies found"}); 
+        })
+    } else {
+        res.status(500).json({error: "please log in first"});
+    }
+  })
+
+  router.post("/:user_id/replies", (req, res) => {
+    const user_id = req.params.user_id;
+    const { tweet_id, reply } = req.body;
+
+    if (user_id === req.session.userID) {
+      db.addReply(user_id, tweet_id, reply)
+        .then(data => {
+          res.status(200).json(data)
+        })
+    } else {
+      res.status(500).json({ error: "please login first" });
     }
   })
 

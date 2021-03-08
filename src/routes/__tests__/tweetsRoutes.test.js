@@ -1,6 +1,6 @@
 const request = require("supertest");
 const app = require("../../application");
-const { closeConnection, getTweetByID } = require("../../../db/helper");
+const { closeConnection, getTweetByID, getRetweetCount } = require("../../../db/helper");
 
 describe("Testing tweets routes", () => {
   const agent = request.agent(app)
@@ -46,58 +46,62 @@ describe("Testing tweets routes", () => {
     })
   })
 
-  test("should increase the like count by 1", async () => {
-    let tweet_id = 2;
-    let likes;
-    //get the initial likes count
-    await getTweetByID(user_id, tweet_id) //note that user_id 1 is the owner of tweet_id 2
-      .then(data => {
-        likes = data.likes
-      }) 
+  test("should get the number of times a specific tweet was retweeted", async () => {
+    let tweet_id = 4; //this tweet has been retweeted 3 times
     await agent
-      .put(`/api/tweets/${tweet_id}/like`)
+      .get(`/api/tweets/${tweet_id}/retweets`)
+      .set('Accept', 'application/json')
       .then(response => {
         expect(response.statusCode).toBe(200)
-        expect(response.body.likes).toEqual(likes + 1)
+        expect.objectContaining({
+          retweet_count: 3
+        })
       })
   })
 
-  test("should return an error if a user likes a tweet that does not exist", async () => {
-    let tweet_id = 12; //this tweet does not exist in the test DB
-    await agent
-      .put(`/api/tweets/${tweet_id}/like`)
+  test("should return an error if an unauthorized user tries to get the retweet count", async () => {
+    let tweet_id = 4; //this tweet has been retweeted 3 times
+    await request(app) //using a new request to simulate a user not being logged in
+      .get(`/api/tweets/${tweet_id}/retweets`)
+      .set('Accept', 'application/json')
       .then(response => {
         expect(response.statusCode).toBe(500)
         expect(response.body).toHaveProperty('error')
       })
   })
 
-  test("should decrease the like count by 1", async () => {
-    let tweet_id = 1; //this tweet initially has 1 like
-    let likes;
-    //get the initial likes count
-    await getTweetByID(user_id, tweet_id) //note that user_id 1 is the owner of tweet_id 1
-      .then(data => {
-        likes = data.likes
-      })
+  test("should increase the retweet count by 1", async () => {
+    const tweet_id = 1 //it has been retweeted twice
+    const retweets = await getRetweetCount(tweet_id)
     await agent
-      .put(`/api/tweets/${tweet_id}/unlike`)
+      .post(`/api/tweets/${tweet_id}/retweet`)
       .then(response => {
         expect(response.statusCode).toBe(200)
-        expect(response.body.likes).toEqual(likes - 1)
+        expect.objectContaining({
+          tweet_id,
+          retweeted_by: user_id
+        })
+      })
+    let updated_count = await getRetweetCount(tweet_id)
+    expect(Number(updated_count.retweet_count)).toEqual(Number(retweets.retweet_count) + 1)
+  })
+
+  test("should return all the thread for a given tweet", async () => {
+    const tweet_id = 2;
+    await agent
+      .get(`/api/tweets/${tweet_id}/thread`)
+      .set('Accept', 'application/json')
+      .then(response => {
+        expect(response.statusCode).toBe(200)
+        expect(response.body.length).toBeGreaterThanOrEqual(1)
       })
   })
 
-  test("should return an error if a user tries to unlike a tweet with 0 likes", async () => {
-    let tweet_id = 1; //the like count for this tweet has been reduced to 0 in the previous test
-    let likes;
-    //get the initial likes count
-    await getTweetByID(user_id, tweet_id) //note that user_id 1 is the owner of tweet_id 1
-      .then(data => {
-        likes = data.likes
-      })
-    await agent
-      .put(`/api/tweets/${tweet_id}/unlike`)
+  test("should return an error if an unauthorized user attempts to get a tweet thread", async () => {
+    const tweet_id = 2;
+    await request(app)
+      .get(`/api/tweets/${tweet_id}/thread`)
+      .set('Accept', 'application/json')
       .then(response => {
         expect(response.statusCode).toBe(500)
         expect(response.body).toHaveProperty('error')

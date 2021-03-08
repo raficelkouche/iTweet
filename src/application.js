@@ -3,7 +3,7 @@ const express = require("express");
 const cookieSession = require("cookie-session");
 const methodOverride = require("method-override");
 const app = express();
-const db = require("../db/helper")
+const db = require("../db/helper");
 
 
 app.use(cookieSession({
@@ -12,7 +12,7 @@ app.use(cookieSession({
 }));
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json())
+app.use(express.json());
 
 //allow for PUT and DELETE requests
 app.use(methodOverride('_method'));
@@ -25,4 +25,4 @@ app.use("/api/users", userRoutes(db));
 app.use("/api/tweets", tweetRoutes(db));
 app.use("/api/sessions", sessionRoutes(db));
 
-module.exports = app
+module.exports = app;

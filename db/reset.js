@@ -1,7 +1,7 @@
 /*will be used to reset the database whenever required */
 // load .env data into process.env
 require('dotenv').config();
-const ENV = "test" //this is currently hardcoded as development/production setup is not implemented
+const ENV = "test"; //this is currently hardcoded as development/production setup is not implemented
 // other dependencies
 const fs = require('fs');
 const chalk = require('chalk');
@@ -11,7 +11,7 @@ const Client = require('pg-native');
 const client = new Client();
 
 // Loads the schema files from db/schema
-const runSchemaFiles = function () {
+const runSchemaFiles = function() {
   console.log(chalk.cyan(`-> Loading Schema Files ...`));
   const schemaFilenames = fs.readdirSync('./db/schema');
 
@@ -22,9 +22,9 @@ const runSchemaFiles = function () {
   }
 };
 
-const runSeedFiles = function () {
+const runSeedFiles = function() {
   console.log(chalk.cyan(`-> Loading Seeds ...`));
-  const sql = fs.readFileSync(`./db/seeds/${ENV}.sql`)
+  const sql = fs.readFileSync(`./db/seeds/${ENV}.sql`);
   console.log(`\t-> Running ${chalk.green(`${ENV}.sql`)}`);
   client.querySync(sql);
 };

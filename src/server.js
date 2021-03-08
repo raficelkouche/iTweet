@@ -73,29 +73,3 @@ wss.on('connection', socket => {
 server.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}...`);
 })
-
-//sample
-/* const messageA = {
-  id: '1',
-  content: "hello",
-  sender_id: 1,
-  receiver_id: 2,
-  is_read: false,
-  created_on: (new Date()).toLocaleString("en-us")
-}
-
-const messageB = {
-  id: '2',
-  content: "how are you?",
-  sender_id: 2,
-  receiver_id: 1,
-  is_read: true,
-  created_on: (new Date()).toLocaleString("en-us")
-}
-
-const testConversations = {
-  1: messageA,
-  2: messageB
-}
-
-db.updateMessages(testConversations) */

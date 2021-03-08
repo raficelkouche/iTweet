@@ -48,7 +48,6 @@
         ],
         "space-infix-ops": "error",
         "space-in-parens": "error",
-        "camelcase": "error",
         "eqeqeq": "error",
         "brace-style": "error",
         "space-before-function-paren": [

@@ -9,7 +9,7 @@ helpers for users
 const getAllUsers = () => {
   return pool
     .query('SELECT * FROM users')
-    .then(res => res.rows[0])
+    .then(res => res.rows)
     .catch(err => console.log(err))
 }
 exports.getAllUsers = getAllUsers;

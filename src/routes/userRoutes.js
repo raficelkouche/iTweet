@@ -4,6 +4,20 @@ const saltRounds = 10;
 
 module.exports = db => {
   //register a new user
+  router.get("/", (req, res) => {
+    const user_id = req.session.userID
+
+    if(user_id) {
+      db.getAllUsers()
+        .then(data => {
+          (data.length > 0) ? res.status(200).json(data)
+          : res.status(500).json({ message: "no registered users" })
+        })
+    } else {
+      res.status(500).json({ error: "unauthorized" })
+    }
+  })
+  
   router.post("/", (req, res) => {
     /* input validation to be taken care of on the client side. This includes 
     empty name/email/password fields, non-matching password/password confirmation fields and so on */
